@@ -1,4 +1,4 @@
-import { CameraView, useCameraPermissions } from "expo-camera";
+import { CameraView, useCameraPermissions, CameraType } from "expo-camera";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Button,
@@ -11,12 +11,19 @@ import {
   View,
 } from "react-native";
 
+// Interface for captured frame data
+interface CapturedFrame {
+  id: number;
+  base64: string | undefined;
+  uri: string;
+}
+
 export default function App() {
-  const [facing, setFacing] = useState("back");
+  const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
-  const [capturedFrames, setCapturedFrames] = useState([]);
+  const [capturedFrames, setCapturedFrames] = useState<CapturedFrame[]>([]);
   const cameraRef = useRef<CameraView>(null);
-  const captureIntervalRef = useRef(null);
+  const captureIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // 當相機就緒時，啟動自動擷取
   const onCameraReady = () => {
@@ -91,11 +98,11 @@ export default function App() {
     );
   }
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item }: { item: CapturedFrame }) => (
     <View style={styles.frameItem}>
       <Image source={{ uri: item.uri }} style={styles.frameImage} />
       <Text style={styles.frameText}>
-        Base64 Data (僅顯示部分): {item.base64.substring(0, 50)}...
+        Base64 Data (僅顯示部分): {item.base64?.substring(0, 50) || "No base64 data"}...
       </Text>
     </View>
   );
